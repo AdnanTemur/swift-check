@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SwiftCheck</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500;700&display=swap");
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --orb1: #052e16;
+        --orb2: #064e3b;
+        --orb3: #0f4c3a;
+        --orb4: #166534;
+        --bg: #030a06;
+        --glass-bg: rgba(255, 255, 255, 0.06);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-active: rgba(74, 222, 128, 0.1);
+        --glass-active-border: rgba(74, 222, 128, 0.5);
+        --text: #f0fdf4;
+        --muted: rgba(187, 247, 208, 0.5);
+        --a: #4ade80;
+        --a2: #86efac;
+        --a3: #2dd4bf;
+        --a4: #bef264;
+        --warn: #fb923c;
+        --good: #4ade80;
+        --grad: linear-gradient(90deg, #059669, #4ade80, #2dd4bf);
+        --track: rgba(255, 255, 255, 0.07);
+        --shadow: rgba(0, 0, 0, 0.5);
+        --d: "Barlow Condensed", sans-serif;
+        --b: "Inter", sans-serif;
+        --m: "JetBrains Mono", monospace;
+      }
+      html.light {
+        --orb1: #d1fae5;
+        --orb2: #a7f3d0;
+        --orb3: #ccfbf1;
+        --orb4: #99f6e4;
+        --bg: #f0fdf4;
+        --glass-bg: rgba(255, 255, 255, 0.65);
+        --glass-border: rgba(0, 0, 0, 0.08);
+        --glass-active: rgba(5, 150, 105, 0.08);
+        --glass-active-border: rgba(5, 150, 105, 0.5);
+        --text: #052e16;
+        --muted: rgba(6, 78, 59, 0.55);
+        --a: #059669;
+        --a2: #0d9488;
+        --a3: #0891b2;
+        --a4: #65a30d;
+        --warn: #ea580c;
+        --good: #059669;
+        --grad: linear-gradient(90deg, #047857, #059669, #0d9488);
+        --track: rgba(0, 0, 0, 0.07);
+        --shadow: rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        width: 360px;
+        height: 530px;
+        overflow: hidden;
+        font-family: var(--b);
+        color: var(--text);
+        background: var(--bg);
+        position: relative;
+        transition:
+          background 0.35s,
+          color 0.35s;
+      }
+
+      .orbs {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        animation: oF 10s ease-in-out infinite;
+      }
+      .o1 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, var(--orb1), transparent);
+        opacity: 0.8;
+        top: -70px;
+        left: -55px;
+      }
+      .o2 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, var(--orb2), transparent);
+        opacity: 0.65;
+        top: 130px;
+        right: -60px;
+        animation-delay: -4s;
+      }
+      .o3 {
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, var(--orb3), transparent);
+        opacity: 0.6;
+        bottom: -65px;
+        left: 15px;
+        animation-delay: -6s;
+      }
+      .o4 {
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, var(--orb4), transparent);
+        opacity: 0.5;
+        bottom: 40px;
+        right: -25px;
+        animation-delay: -2.5s;
+      }
+      @keyframes oF {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        40% {
+          transform: translate(13px, -17px);
+        }
+        70% {
+          transform: translate(-9px, 11px);
+        }
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        padding: 13px 13px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        height: 100%;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px var(--shadow);
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+      }
+      .glass::before {
+        content: "";
+        display: block;
+        height: 1px;
+        margin: 0 12%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.18),
+          transparent
+        );
+        border-radius: 1px;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+      }
+      .header::before {
+        display: none;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .lmark {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--a), var(--a3));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+      }
+      html.light .lmark {
+        background: linear-gradient(135deg, #059669, #0d9488);
+        box-shadow: 0 0 12px rgba(5, 150, 105, 0.3);
+      }
+      .lmark svg {
+        width: 14px;
+        height: 14px;
+      }
+      .lname {
+        font-family: var(--d);
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        line-height: 1;
+        background: linear-gradient(100deg, var(--a2), var(--a3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      html.light .lname {
+        background: linear-gradient(100deg, #047857, #0d9488);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .lsub {
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-family: var(--m);
+        margin-top: 1px;
+      }
+      .hdr-r {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .tbtn {
+        width: 34px;
+        height: 19px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .tthumb {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--a), var(--a3));
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s cubic-bezier(0.34, 1.5, 0.64, 1);
+        box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
+      }
+      html.light .tthumb {
+        transform: translateX(15px);
+      }
+      .temoji {
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        font-size: 9px;
+        line-height: 14px;
+        pointer-events: none;
+      }
+      html.light .temoji {
+        left: 3px;
+        right: auto;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 9px;
+        font-family: var(--m);
+        color: var(--muted);
+        letter-spacing: 1px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--muted);
+        transition:
+          background 0.3s,
+          box-shadow 0.3s;
+      }
+      .dot.running {
+        background: var(--good);
+        box-shadow: 0 0 7px var(--good);
+        animation: blk 1s infinite;
+      }
+      .dot.done {
+        background: var(--a);
+        box-shadow: 0 0 7px var(--a);
+      }
+      .dot.error {
+        background: var(--warn);
+        box-shadow: 0 0 7px var(--warn);
+      }
+      @keyframes blk {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .last-tested {
+        text-align: center;
+        font-size: 9px;
+        font-family: var(--m);
+        color: var(--muted);
+        letter-spacing: 1px;
+        min-height: 11px;
+      }
+
+      /* Dial */
+      .dial-card {
+        padding: 14px 12px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+      }
+      .dial-wrap {
+        position: relative;
+        width: 228px;
+        height: 124px;
+      }
+      .dial-svg {
+        width: 228px;
+        height: 124px;
+        overflow: visible;
+      }
+      .speed-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+      }
+      .speed-val {
+        font-family: var(--d);
+        font-size: 60px;
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1;
+        letter-spacing: -1.5px;
+        text-shadow: 0 0 30px rgba(74, 222, 128, 0.45);
+      }
+      html.light .speed-val {
+        text-shadow: none;
+      }
+      .speed-unit {
+        font-family: var(--d);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--a);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-top: -1px;
+      }
+      .phase-label {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        font-family: var(--m);
+        text-align: center;
+        min-height: 13px;
+        margin-top: 3px;
+      }
+
+      /* Stats */
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 7px;
+      }
+      .stat {
+        padding: 10px 7px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        border-radius: 13px;
+        transition:
+          background 0.3s,
+          border-color 0.3s,
+          box-shadow 0.3s;
+        position: relative;
+      }
+      .stat.active {
+        background: var(--glass-active) !important;
+        border-color: var(--glass-active-border) !important;
+        box-shadow: 0 0 16px rgba(74, 222, 128, 0.18);
+      }
+      html.light .stat.active {
+        box-shadow: 0 0 16px rgba(5, 150, 105, 0.18);
+      }
+      .stat-label {
+        font-family: var(--m);
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .stat-val {
+        font-family: var(--d);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+        letter-spacing: -0.5px;
+      }
+      #cardPing .stat-val {
+        color: #fbbf24;
+      }
+      #cardDl .stat-val {
+        color: var(--a);
+      }
+      #cardUl .stat-val {
+        color: var(--a2);
+      }
+      .stat-unit {
+        font-size: 8px;
+        color: var(--muted);
+        font-family: var(--m);
+        letter-spacing: 1px;
+      }
+      .stat-icon {
+        position: absolute;
+        top: 6px;
+        right: 7px;
+        font-size: 8px;
+        opacity: 0.28;
+      }
+
+      /* Progress */
+      .progress-card {
+        padding: 9px 12px;
+      }
+      .progress-card::before {
+        display: none;
+      }
+      .progress-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 7px;
+      }
+      .prog-phase {
+        font-size: 9px;
+        color: var(--text);
+        letter-spacing: 1px;
+        font-family: var(--m);
+        text-transform: uppercase;
+      }
+      .prog-pct {
+        font-size: 9px;
+        color: var(--a);
+        font-family: var(--m);
+        font-weight: 700;
+      }
+      .bar-track {
+        height: 4px;
+        background: var(--track);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 4px;
+        background: var(--grad);
+        box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Rating */
+      .rating-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 20px;
+      }
+      .rating-label {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-family: var(--m);
+      }
+      .rating-badge {
+        padding: 3px 14px;
+        border-radius: 20px;
+        font-family: var(--d);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: scale(0.8);
+        transition:
+          opacity 0.4s,
+          transform 0.4s;
+      }
+      .rating-badge.show {
+        opacity: 1;
+        transform: scale(1);
+      }
+      .rating-badge.excellent {
+        background: rgba(74, 222, 128, 0.14);
+        color: var(--good);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+      }
+      .rating-badge.good {
+        background: rgba(45, 212, 191, 0.14);
+        color: var(--a3);
+        border: 1px solid rgba(45, 212, 191, 0.4);
+      }
+      .rating-badge.fair {
+        background: rgba(251, 146, 60, 0.14);
+        color: var(--warn);
+        border: 1px solid rgba(251, 146, 60, 0.4);
+      }
+      .rating-badge.poor {
+        background: rgba(239, 68, 68, 0.14);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+      }
+      html.light .rating-badge.excellent {
+        background: rgba(5, 150, 105, 0.1);
+        color: #047857;
+        border-color: rgba(5, 150, 105, 0.4);
+      }
+      html.light .rating-badge.good {
+        background: rgba(13, 148, 136, 0.1);
+        color: #0f766e;
+        border-color: rgba(13, 148, 136, 0.4);
+      }
+
+      /* Button */
+      .btn-wrap {
+        display: flex;
+        justify-content: center;
+      }
+      .btn {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          135deg,
+          rgba(5, 150, 105, 0.25),
+          rgba(45, 212, 191, 0.18)
+        );
+        border: 1px solid rgba(74, 222, 128, 0.38);
+        color: var(--text);
+        font-family: var(--d);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 10px 40px;
+        border-radius: 50px;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.3s,
+          border-color 0.3s;
+        box-shadow: 0 3px 16px rgba(5, 150, 105, 0.25);
+      }
+      html.light .btn {
+        color: var(--text);
+        background: linear-gradient(
+          135deg,
+          rgba(5, 150, 105, 0.18),
+          rgba(13, 148, 136, 0.12)
+        );
+      }
+      .btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(5, 150, 105, 0.48),
+          rgba(45, 212, 191, 0.38)
+        );
+        opacity: 0;
+        transition: opacity 0.22s;
+      }
+      .btn:hover:not(:disabled)::before {
+        opacity: 1;
+      }
+      .btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 22px rgba(74, 222, 128, 0.42);
+        border-color: rgba(74, 222, 128, 0.65);
+      }
+      .btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .footer {
+        text-align: center;
+        font-size: 8px;
+        color: var(--muted);
+        font-family: var(--m);
+        letter-spacing: 1px;
+        opacity: 0.4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orbs">
+      <div class="orb o1"></div>
+      <div class="orb o2"></div>
+      <div class="orb o3"></div>
+      <div class="orb o4"></div>
+    </div>
+
+    <div class="wrap">
+      <div class="glass header">
+        <div class="logo">
+          <div class="lmark">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 2L8 8L12 5"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="8" cy="8" r="2" fill="white" opacity="0.9" />
+              <path
+                d="M3 13 Q8 7 13 13"
+                stroke="white"
+                stroke-width="1.2"
+                fill="none"
+                opacity="0.55"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div>
+            <div class="lname">SwiftCheck</div>
+            <div class="lsub">Speed Test</div>
+          </div>
+        </div>
+        <div class="hdr-r">
+          <button class="tbtn" id="themeBtn">
+            <div class="tthumb" id="themeThumb"></div>
+            <span class="temoji" id="themeEmoji">🌙</span>
+          </button>
+          <div class="status">
+            <div class="dot" id="dot"></div>
+            <span id="statusText">READY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="last-tested" id="lastTested"></div>
+
+      <div class="glass dial-card">
+        <div class="dial-wrap">
+          <svg class="dial-svg" viewBox="0 0 228 124" id="dialSvg">
+            <defs>
+              <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f87171" />
+                <stop offset="28%" stop-color="#fb923c" />
+                <stop offset="60%" stop-color="#4ade80" />
+                <stop offset="100%" stop-color="#2dd4bf" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2.2" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="ng">
+                <feGaussianBlur stdDeviation="1.2" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <path
+              d="M 14 114 A 100 100 0 0 1 214 114"
+              fill="none"
+              stroke-width="10"
+              stroke-linecap="round"
+              id="dialTrack"
+              style="stroke: rgba(255, 255, 255, 0.07)"
+            />
+            <path
+              d="M 14 114 A 100 100 0 0 1 214 114"
+              fill="none"
+              stroke="url(#arcGrad)"
+              stroke-width="10"
+              stroke-linecap="round"
+              stroke-dasharray="314"
+              stroke-dashoffset="314"
+              id="dialArc"
+              style="
+                transition: stroke-dashoffset 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+                filter: url(#glow);
+              "
+            />
+            <g id="ticks" opacity="0.38"></g>
+            <g id="scaleLabels"></g>
+            <g
+              id="needle"
+              transform="rotate(-90 114 114)"
+              style="
+                transition: transform 0.5s cubic-bezier(0.34, 1.25, 0.64, 1);
+              "
+            >
+              <line
+                x1="114"
+                y1="114"
+                x2="114"
+                y2="26"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                filter="url(#ng)"
+                id="needleLine"
+                style="stroke: rgba(255, 255, 255, 0.92)"
+              />
+              <polygon
+                points="112,114 116,114 115,30 113,30"
+                fill="white"
+                opacity="0.82"
+                id="needlePoly"
+              />
+            </g>
+            <circle
+              cx="114"
+              cy="114"
+              r="7"
+              id="pivotGlow"
+              style="fill: rgba(74, 222, 128, 0.28)"
+            />
+            <circle
+              cx="114"
+              cy="114"
+              r="4"
+              id="pivotDot"
+              style="fill: #4ade80"
+            />
+            <circle cx="114" cy="114" r="2" fill="white" />
+            <!-- Dynamic ceiling label -->
+            <text
+              id="dialMaxLabel"
+              x="114"
+              y="108"
+              text-anchor="middle"
+              fill="rgba(255,255,255,0.25)"
+              font-size="7"
+              font-family="JetBrains Mono,monospace"
+            ></text>
+          </svg>
+        </div>
+        <div class="speed-display">
+          <div class="speed-val" id="speedVal">—</div>
+          <div class="speed-unit">MB / s</div>
+        </div>
+        <div class="phase-label" id="phaseLabel">READY TO TEST</div>
+      </div>
+
+      <div class="stats">
+        <div class="glass stat" id="cardPing">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Ping</div>
+          <div class="stat-val" id="valPing">—</div>
+          <div class="stat-unit">ms</div>
+        </div>
+        <div class="glass stat" id="cardDl">
+          <div class="stat-icon">↓</div>
+          <div class="stat-label">Down</div>
+          <div class="stat-val" id="valDl">—</div>
+          <div class="stat-unit">MB/s</div>
+        </div>
+        <div class="glass stat" id="cardUl">
+          <div class="stat-icon">↑</div>
+          <div class="stat-label">Up</div>
+          <div class="stat-val" id="valUl">—</div>
+          <div class="stat-unit">MB/s</div>
+        </div>
+      </div>
+
+      <div class="glass progress-card">
+        <div class="progress-top">
+          <div class="prog-phase" id="progressPhase">IDLE</div>
+          <div class="prog-pct" id="progressPct">0%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+      </div>
+
+      <div class="rating-row">
+        <span class="rating-label" id="ratingLabel" style="opacity: 0"
+          >Connection:</span
+        >
+        <span class="rating-badge" id="ratingBadge"></span>
+      </div>
+
+      <div class="btn-wrap">
+        <button class="btn" id="startBtn">
+          <span id="btnText">▶ Run Test</span>
+        </button>
+      </div>
+
+      <div class="footer">MB/s = MEGABYTES/SEC · NO DATA STORED · v1.2</div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
