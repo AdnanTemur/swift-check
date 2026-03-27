@@ -19,7 +19,9 @@
         --orb2: #064e3b;
         --orb3: #0f4c3a;
         --orb4: #166534;
-        --bg: #030a06;
+        --bg: #020202;
+        --surface: rgba(255, 255, 255, 0.04);
+        --surface-border: rgba(255, 255, 255, 0.06);
         --glass-bg: rgba(255, 255, 255, 0.06);
         --glass-border: rgba(255, 255, 255, 0.12);
         --glass-active: rgba(74, 222, 128, 0.1);
@@ -38,13 +40,18 @@
         --d: "Barlow Condensed", sans-serif;
         --b: "Inter", sans-serif;
         --m: "JetBrains Mono", monospace;
+        --btn-bg: rgba(5, 150, 105, 0.2);
+        --btn-border: rgba(74, 222, 128, 0.3);
+        --btn-hover: rgba(5, 150, 105, 0.35);
       }
       html.light {
         --orb1: #d1fae5;
         --orb2: #a7f3d0;
         --orb3: #ccfbf1;
         --orb4: #99f6e4;
-        --bg: #f0fdf4;
+        --bg: #f5faf7;
+        --surface: rgba(0, 0, 0, 0.03);
+        --surface-border: rgba(0, 0, 0, 0.06);
         --glass-bg: rgba(255, 255, 255, 0.65);
         --glass-border: rgba(0, 0, 0, 0.08);
         --glass-active: rgba(5, 150, 105, 0.08);
@@ -59,7 +66,10 @@
         --good: #059669;
         --grad: linear-gradient(90deg, #047857, #059669, #0d9488);
         --track: rgba(0, 0, 0, 0.07);
-        --shadow: rgba(0, 0, 0, 0.1);
+        --shadow: rgba(0, 0, 0, 0.06);
+        --btn-bg: rgba(5, 150, 105, 0.1);
+        --btn-border: rgba(5, 150, 105, 0.3);
+        --btn-hover: rgba(5, 150, 105, 0.2);
       }
 
       body {
@@ -75,6 +85,7 @@
           color 0.35s;
       }
 
+      /* Subtle background orbs — toned down */
       .orbs {
         position: absolute;
         inset: 0;
@@ -85,40 +96,40 @@
       .orb {
         position: absolute;
         border-radius: 50%;
-        filter: blur(60px);
-        animation: oF 10s ease-in-out infinite;
+        filter: blur(80px);
+        animation: oF 12s ease-in-out infinite;
       }
       .o1 {
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
         background: radial-gradient(circle, var(--orb1), transparent);
-        opacity: 0.8;
+        opacity: 0.45;
         top: -70px;
         left: -55px;
       }
       .o2 {
-        width: 200px;
-        height: 200px;
+        width: 160px;
+        height: 160px;
         background: radial-gradient(circle, var(--orb2), transparent);
-        opacity: 0.65;
-        top: 130px;
+        opacity: 0.35;
+        top: 150px;
         right: -60px;
         animation-delay: -4s;
       }
       .o3 {
-        width: 220px;
-        height: 220px;
+        width: 180px;
+        height: 180px;
         background: radial-gradient(circle, var(--orb3), transparent);
-        opacity: 0.6;
+        opacity: 0.3;
         bottom: -65px;
         left: 15px;
         animation-delay: -6s;
       }
       .o4 {
-        width: 180px;
-        height: 180px;
+        width: 140px;
+        height: 140px;
         background: radial-gradient(circle, var(--orb4), transparent);
-        opacity: 0.5;
+        opacity: 0.25;
         bottom: 40px;
         right: -25px;
         animation-delay: -2.5s;
@@ -129,10 +140,10 @@
           transform: translate(0, 0);
         }
         40% {
-          transform: translate(13px, -17px);
+          transform: translate(10px, -12px);
         }
         70% {
-          transform: translate(-9px, 11px);
+          transform: translate(-7px, 8px);
         }
       }
 
@@ -146,6 +157,7 @@
         height: 100%;
       }
 
+      /* ─── Glass — only dial + stat cards ─── */
       .glass {
         background: var(--glass-bg);
         border: 1px solid var(--glass-border);
@@ -165,21 +177,28 @@
         background: linear-gradient(
           90deg,
           transparent,
-          rgba(255, 255, 255, 0.18),
+          rgba(255, 255, 255, 0.15),
           transparent
         );
         border-radius: 1px;
       }
 
-      /* Header */
+      /* ─── Flat surface — header, progress, etc. ─── */
+      .flat {
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+      }
+
+      /* Header — flat */
       .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 8px 12px;
-      }
-      .header::before {
-        display: none;
       }
       .logo {
         display: flex;
@@ -195,11 +214,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
       }
       html.light .lmark {
         background: linear-gradient(135deg, #059669, #0d9488);
-        box-shadow: 0 0 12px rgba(5, 150, 105, 0.3);
       }
       .lmark svg {
         width: 14px;
@@ -236,8 +253,8 @@
       .tbtn {
         width: 34px;
         height: 19px;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
         border-radius: 10px;
         cursor: pointer;
         position: relative;
@@ -252,7 +269,6 @@
         top: 2px;
         left: 2px;
         transition: transform 0.3s cubic-bezier(0.34, 1.5, 0.64, 1);
-        box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
       }
       html.light .tthumb {
         transform: translateX(15px);
@@ -319,7 +335,7 @@
         min-height: 11px;
       }
 
-      /* Dial */
+      /* ─── Dial — keeps glass ─── */
       .dial-card {
         padding: 14px 12px 10px;
         display: flex;
@@ -350,7 +366,7 @@
         color: var(--text);
         line-height: 1;
         letter-spacing: -1.5px;
-        text-shadow: 0 0 30px rgba(74, 222, 128, 0.45);
+        text-shadow: 0 0 30px rgba(74, 222, 128, 0.35);
       }
       html.light .speed-val {
         text-shadow: none;
@@ -375,7 +391,7 @@
         margin-top: 3px;
       }
 
-      /* Stats */
+      /* ─── Stats — keep glass ─── */
       .stats {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -440,12 +456,9 @@
         opacity: 0.28;
       }
 
-      /* Progress */
+      /* ─── Progress — flat ─── */
       .progress-card {
         padding: 9px 12px;
-      }
-      .progress-card::before {
-        display: none;
       }
       .progress-top {
         display: flex;
@@ -477,7 +490,6 @@
         width: 0%;
         border-radius: 4px;
         background: var(--grad);
-        box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
         transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
@@ -515,37 +527,37 @@
         transform: scale(1);
       }
       .rating-badge.excellent {
-        background: rgba(74, 222, 128, 0.14);
+        background: rgba(74, 222, 128, 0.12);
         color: var(--good);
-        border: 1px solid rgba(74, 222, 128, 0.4);
+        border: 1px solid rgba(74, 222, 128, 0.35);
       }
       .rating-badge.good {
-        background: rgba(45, 212, 191, 0.14);
+        background: rgba(45, 212, 191, 0.12);
         color: var(--a3);
-        border: 1px solid rgba(45, 212, 191, 0.4);
+        border: 1px solid rgba(45, 212, 191, 0.35);
       }
       .rating-badge.fair {
-        background: rgba(251, 146, 60, 0.14);
+        background: rgba(251, 146, 60, 0.12);
         color: var(--warn);
-        border: 1px solid rgba(251, 146, 60, 0.4);
+        border: 1px solid rgba(251, 146, 60, 0.35);
       }
       .rating-badge.poor {
-        background: rgba(239, 68, 68, 0.14);
+        background: rgba(239, 68, 68, 0.12);
         color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.4);
+        border: 1px solid rgba(239, 68, 68, 0.35);
       }
       html.light .rating-badge.excellent {
-        background: rgba(5, 150, 105, 0.1);
+        background: rgba(5, 150, 105, 0.08);
         color: #047857;
-        border-color: rgba(5, 150, 105, 0.4);
+        border-color: rgba(5, 150, 105, 0.35);
       }
       html.light .rating-badge.good {
-        background: rgba(13, 148, 136, 0.1);
+        background: rgba(13, 148, 136, 0.08);
         color: #0f766e;
-        border-color: rgba(13, 148, 136, 0.4);
+        border-color: rgba(13, 148, 136, 0.35);
       }
 
-      /* Button */
+      /* ─── Button — flat, solid ─── */
       .btn-wrap {
         display: flex;
         justify-content: center;
@@ -553,12 +565,8 @@
       .btn {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(
-          135deg,
-          rgba(5, 150, 105, 0.25),
-          rgba(45, 212, 191, 0.18)
-        );
-        border: 1px solid rgba(74, 222, 128, 0.38);
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
         color: var(--text);
         font-family: var(--d);
         font-size: 15px;
@@ -570,37 +578,13 @@
         cursor: pointer;
         transition:
           transform 0.15s,
-          box-shadow 0.3s,
-          border-color 0.3s;
-        box-shadow: 0 3px 16px rgba(5, 150, 105, 0.25);
-      }
-      html.light .btn {
-        color: var(--text);
-        background: linear-gradient(
-          135deg,
-          rgba(5, 150, 105, 0.18),
-          rgba(13, 148, 136, 0.12)
-        );
-      }
-      .btn::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(5, 150, 105, 0.48),
-          rgba(45, 212, 191, 0.38)
-        );
-        opacity: 0;
-        transition: opacity 0.22s;
-      }
-      .btn:hover:not(:disabled)::before {
-        opacity: 1;
+          background 0.2s,
+          border-color 0.2s;
       }
       .btn:hover:not(:disabled) {
+        background: var(--btn-hover);
+        border-color: rgba(74, 222, 128, 0.5);
         transform: translateY(-1px);
-        box-shadow: 0 5px 22px rgba(74, 222, 128, 0.42);
-        border-color: rgba(74, 222, 128, 0.65);
       }
       .btn:active:not(:disabled) {
         transform: translateY(0);
@@ -633,7 +617,8 @@
     </div>
 
     <div class="wrap">
-      <div class="glass header">
+      <!-- Header — FLAT -->
+      <div class="flat header">
         <div class="logo">
           <div class="lmark">
             <svg viewBox="0 0 16 16" fill="none">
@@ -674,6 +659,7 @@
 
       <div class="last-tested" id="lastTested"></div>
 
+      <!-- Dial — GLASS -->
       <div class="glass dial-card">
         <div class="dial-wrap">
           <svg class="dial-svg" viewBox="0 0 228 124" id="dialSvg">
@@ -763,7 +749,6 @@
               style="fill: #4ade80"
             />
             <circle cx="114" cy="114" r="2" fill="white" />
-            <!-- Dynamic ceiling label -->
             <text
               id="dialMaxLabel"
               x="114"
@@ -782,6 +767,7 @@
         <div class="phase-label" id="phaseLabel">READY TO TEST</div>
       </div>
 
+      <!-- Stats — GLASS -->
       <div class="stats">
         <div class="glass stat" id="cardPing">
           <div class="stat-icon">⚡</div>
@@ -803,7 +789,8 @@
         </div>
       </div>
 
-      <div class="glass progress-card">
+      <!-- Progress — FLAT -->
+      <div class="flat progress-card">
         <div class="progress-top">
           <div class="prog-phase" id="progressPhase">IDLE</div>
           <div class="prog-pct" id="progressPct">0%</div>
